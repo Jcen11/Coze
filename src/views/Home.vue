@@ -99,6 +99,7 @@ import {
   createChat,
   getChatMessages,
   getConversationMessages,
+  checkChatStatus,
 } from "../api/coze";
 
 // 路由实例
@@ -127,7 +128,7 @@ onMounted(() => {
     currentConversationId,
     messages,
     loading,
-    inputMessage
+    inputMessage,
   };
   console.log("调试模式已开启：请在控制台输入 window.debug 查看变量");
 });
@@ -251,21 +252,31 @@ const handleSendMessage = async () => {
 // 轮询聊天状态
 const pollChatStatus = async (chatId, retryCount = 0) => {
   try {
-    // 获取消息
-    const response = await getChatMessages({
+    // 先检查聊天状态
+    const statusResponse = await checkChatStatus({
       conversation_id: currentConversationId.value,
       chat_id: chatId,
     });
 
-    // 查找AI回复
-    const aiMessage = response.messages.find((msg) => msg.role === "assistant");
-    if (aiMessage) {
-      // 添加AI回复到列表
-      messages.value.push(aiMessage);
-      return;
+    // 如果状态为completed，获取消息
+    if (statusResponse.status === "completed") {
+      const messageResponse = await getChatMessages({
+        conversation_id: currentConversationId.value,
+        chat_id: chatId,
+      });
+
+      // 查找AI回复
+      const aiMessage = messageResponse.messages.find(
+        (msg) => msg.role === "assistant"
+      );
+      if (aiMessage) {
+        // 添加AI回复到列表
+        messages.value.push(aiMessage);
+        return;
+      }
     }
 
-    // 如果没有AI回复，继续轮询（最多轮询10次，每次间隔1秒）
+    // 如果状态不是completed或没有AI回复，继续轮询（最多轮询10次，每次间隔1秒）
     if (retryCount < 10) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await pollChatStatus(chatId, retryCount + 1);
