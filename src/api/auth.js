@@ -1,20 +1,20 @@
-import request from '../utils/request';
+import request from "../utils/request";
 
 // 登录接口
 export const login = (data) => {
   return request({
-    url: '/auth/login',
-    method: 'post',
-    data
+    url: "/auth/login",
+    method: "post",
+    data,
   });
 };
 
 // 注册接口
 export const register = (data) => {
   return request({
-    url: '/auth/register',
-    method: 'post',
-    data
+    url: "/auth/register",
+    method: "post",
+    data,
   });
 };
 
@@ -22,7 +22,7 @@ export const register = (data) => {
 export const getUserInfo = (id) => {
   return request({
     url: `/user/${id}`,
-    method: 'get'
+    method: "get",
   });
 };
 
@@ -30,6 +30,6 @@ export const getUserInfo = (id) => {
 export const getUserInfoByEmail = (email) => {
   return request({
     url: `/user?email=${email}`,
-    method: 'get'
+    method: "get",
   });
 };
