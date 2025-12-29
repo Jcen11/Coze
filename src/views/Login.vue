@@ -63,7 +63,7 @@ const handleLogin = async () => {
     const response = await login(formData.value);
     
     // 保存token到本地存储
-    localStorage.setItem('token', response.token);
+    localStorage.setItem('token', response.result.token);
     
     // 登录成功，跳转到首页
     router.push('/');

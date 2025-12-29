@@ -18,7 +18,7 @@ const routes = [
     component: () => import('../views/Home.vue'),
     meta: {
       title: '首页 - 养生专家智能体',
-      requireAuth: false // 需要登录才能访问
+      requireAuth: true // 需要登录才能访问
     }
   },
   {

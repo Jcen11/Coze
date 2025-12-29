@@ -122,6 +122,14 @@ const messagesContainer = ref(null);
 // 初始化
 onMounted(() => {
   loadConversations();
+  window.debug = {
+    conversations,
+    currentConversationId,
+    messages,
+    loading,
+    inputMessage
+  };
+  console.log("调试模式已开启：请在控制台输入 window.debug 查看变量");
 });
 
 // 监听消息变化，自动滚动到底部
@@ -137,7 +145,7 @@ watch(
 const loadConversations = async () => {
   try {
     const response = await listConversations();
-    conversations.value = response.conversations;
+    conversations.value = response.conversations || [];
 
     // 如果有会话，默认选择第一个
     if (conversations.value.length > 0) {
@@ -186,7 +194,7 @@ const handleSwitchConversation = async (conversationId) => {
     const response = await getConversationMessages({
       conversation_id: conversationId,
     });
-    messages.value = response.messages;
+    messages.value = response.messages || [];
   } catch (error) {
     console.error("加载会话消息失败:", error);
     messages.value = [];
