@@ -46,7 +46,7 @@
 
         <!-- 消息列表 -->
         <div
-          v-for="(message, index) in reverse_messages"
+          v-for="(message, index) in messages"
           :key="index"
           class="message-item"
           :class="message.role === 'user' ? 'user-message' : 'agent-message'"
@@ -119,10 +119,6 @@ const inputMessage = ref("");
 const loading = ref(false);
 // 消息容器引用
 const messagesContainer = ref(null);
-
-const reverse_messages = computed(() => {
-  return messages.value.slice().reverse();
-});
 
 // 初始化
 onMounted(() => {
@@ -199,7 +195,7 @@ const handleSwitchConversation = async (conversationId) => {
     const response = await getConversationMessages({
       conversation_id: conversationId,
     });
-    messages.value = response.messages || [];
+    messages.value = (response.messages || []).reverse();
   } catch (error) {
     console.error("加载会话消息失败:", error);
     messages.value = [];
