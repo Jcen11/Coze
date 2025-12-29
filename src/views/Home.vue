@@ -46,7 +46,7 @@
 
         <!-- 消息列表 -->
         <div
-          v-for="(message, index) in messages"
+          v-for="(message, index) in reverse_messages"
           :key="index"
           class="message-item"
           :class="message.role === 'user' ? 'user-message' : 'agent-message'"
@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import {
   createConversation,
@@ -119,6 +119,10 @@ const inputMessage = ref("");
 const loading = ref(false);
 // 消息容器引用
 const messagesContainer = ref(null);
+
+const reverse_messages = computed(() => {
+  return messages.value.slice().reverse();
+});
 
 // 初始化
 onMounted(() => {
@@ -267,7 +271,7 @@ const pollChatStatus = async (chatId, retryCount = 0) => {
 
       // 查找AI回复
       const aiMessage = messageResponse.messages.find(
-        (msg) => msg.role === "assistant"
+        (msg) => msg.role === "assistant" && msg.type === "answer"
       );
       if (aiMessage) {
         // 添加AI回复到列表
