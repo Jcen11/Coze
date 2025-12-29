@@ -34,7 +34,24 @@
     <!-- 中间对话区域 -->
     <div class="chat-main">
       <div class="chat-header">
-        <h3>{{ currentConversationTitle || "新会话" }}</h3>
+        <!-- 标题显示模式 -->
+        <div v-if="!isEditingTitle" class="chat-header-title">
+          <h3>{{ currentConversationTitle || "新会话" }}</h3>
+          <button class="edit-title-btn" @click="startEditTitle">编辑</button>
+        </div>
+
+        <!-- 标题编辑模式 -->
+        <div v-else class="chat-header-edit">
+          <input
+            v-model="editTitle"
+            class="title-input"
+            @blur="confirmEdit"
+            @keyup.enter="confirmEdit"
+            @keyup.esc="cancelEditTitle"
+            ref="titleInputRef"
+            maxlength="20"
+          />
+        </div>
       </div>
 
       <div class="messages-container" ref="messagesContainer">
@@ -119,6 +136,9 @@ const inputMessage = ref("");
 const loading = ref(false);
 // 消息容器引用
 const messagesContainer = ref(null);
+// 编辑标题相关
+const editTitle = ref("");
+const isEditingTitle = ref(false);
 
 // 初始化
 onMounted(() => {
@@ -141,6 +161,52 @@ watch(
   },
   { deep: true }
 );
+
+// 标题输入框引用
+const titleInputRef = ref(null);
+
+// 开始编辑标题
+const startEditTitle = () => {
+  if (!currentConversationId.value) return;
+
+  isEditingTitle.value = true;
+  editTitle.value = currentConversationTitle.value || "";
+
+  // 在下一个DOM更新周期聚焦输入框
+  nextTick(() => {
+    if (titleInputRef.value) {
+      titleInputRef.value.focus();
+      titleInputRef.value.select();
+    }
+  });
+};
+
+// 确认编辑标题
+const confirmEdit = () => {
+  if (!currentConversationId.value) return;
+
+  const newTitle = editTitle.value.trim();
+  if (newTitle) {
+    // 更新当前会话标题
+    currentConversationTitle.value = newTitle;
+
+    // 更新会话列表中的标题
+    const conversation = conversations.value.find(
+      (c) => c.conversation_id === currentConversationId.value
+    );
+    if (conversation) {
+      conversation.title = newTitle;
+    }
+  }
+
+  isEditingTitle.value = false;
+};
+
+// 取消编辑标题
+const cancelEditTitle = () => {
+  isEditingTitle.value = false;
+  editTitle.value = "";
+};
 
 // 加载会话列表
 const loadConversations = async () => {
@@ -323,6 +389,69 @@ const handleLogout = () => {
   display: flex;
   height: 100vh;
   width: 100%;
+}
+
+/* 聊天头部样式 */
+.chat-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  background-color: white;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chat-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.chat-header-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.edit-title-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 16px;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.edit-title-btn:hover {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.chat-header-edit {
+  flex: 1;
+  width: 100%;
+}
+
+.title-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.title-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   overflow: hidden;
 }
